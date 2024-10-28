@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserComment } from '../../common/models/UserComment';
 import { User } from '../../common/models/User';
@@ -25,7 +25,7 @@ export class AddCommentComponent {
   selectedImage: File | null = null;
   imageError: string = '';
   imagePreview: string | ArrayBuffer | null = null;
-
+  @Input() useLargeTemplate: boolean = true;
   selectedTextFile: File | null = null;
   textFileError: string = '';
   textFileContent: string = '';

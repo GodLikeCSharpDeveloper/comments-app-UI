@@ -16,7 +16,7 @@ export class CommentCustomValidator {
   }
 
   allowedHtmlValidator(): ValidatorFn {
-    const allowedTags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'li', 'ol'];
+    const allowedTags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'li', 'ol', 'span'];
     const tagRegex = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
     return (control: AbstractControl): { [key: string]: any } | null => {
       const value = control.value;

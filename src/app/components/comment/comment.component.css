@@ -34,33 +34,11 @@
   border-radius: 50%;
 }
 
-.blockquote {
-  padding: 0.5rem 1rem;
-  margin: 0 0 1rem;
-  font-size: 0.875rem;
-  border-left: 0.25rem solid #ccc;
-  background-color: #f8f9fa;
+.comment-image img {
+  border-radius: 5px;
+  transition: transform 0.2s;
 }
 
-.blockquote p {
-  margin-bottom: 0;
-  color: #6c757d;
-}
-
-.comment-quote,
-.comment-text {
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-bottom: 0px;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.comment-quote p {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  margin: 0;
-  color: #6c757d;
+.comment-image img:hover {
+  transform: scale(1.05);
 }/*# sourceMappingURL=comment.component.css.map */

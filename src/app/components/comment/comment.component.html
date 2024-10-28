@@ -62,5 +62,5 @@
   </div>
 
   <!-- Форма ответа -->
-  <app-reply-maker *ngIf="isReplying" (replyAdded)="onReplyAdded($event)"></app-reply-maker>
+<app-add-comment *ngIf="isReplying" [useLargeTemplate]="false"></app-add-comment>
 </div>

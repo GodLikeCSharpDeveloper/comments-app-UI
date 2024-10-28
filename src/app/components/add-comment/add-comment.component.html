@@ -1,81 +1,202 @@
-<form [formGroup]="addRecordForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
-  <div>
-    <label for="userName">User Name*</label>
-    <input id="userName" formControlName="userName" type="text" />
-    <div *ngIf="userName?.touched && userName?.invalid">
-      <small *ngIf="userName?.errors?.required">User Name обязательно.</small>
-      <small *ngIf="userName?.errors?.pattern">Только латинские буквы и цифры.</small>
-    </div>
-  </div>
-
-  <div>
-    <label for="email">E-mail*</label>
-    <input id="email" formControlName="email" type="email" />
-    <div *ngIf="email?.touched && email?.invalid">
-      <small *ngIf="email?.errors?.required">E-mail обязательно.</small>
-      <small *ngIf="email?.errors?.email">Неверный E-mail.</small>
-    </div>
-  </div>
-
-  <div>
-    <label for="homePage">Home Page</label>
-    <input id="homePage" formControlName="homePage" type="url" />
-    <div *ngIf="homePage?.touched && homePage?.invalid">
-      <small *ngIf="homePage?.errors?.invalidUrl">Неверный URL.</small>
-    </div>
-  </div>
-
-  <div>
-    <label for="captcha">CAPTCHA*</label>
+<ng-container *ngIf="useLargeTemplate; else smallTemplate">
+  <form [formGroup]="addRecordForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
     <div>
-      <img
-        [src]="captchaImageUrl"
-        alt="CAPTCHA"
-        (click)="refreshCaptcha()"
-        title="Нажмите, чтобы обновить"
-        style="cursor: pointer"
-      />
-      <button type="button" (click)="refreshCaptcha()">Обновить CAPTCHA</button>
+      <label for="userName">User Name*</label>
+      <input id="userName" formControlName="userName" type="text" />
+      <div *ngIf="userName?.touched && userName?.invalid">
+        <small *ngIf="userName?.errors?.required">User Name обязательно.</small>
+        <small *ngIf="userName?.errors?.pattern">Только латинские буквы и цифры.</small>
+      </div>
     </div>
-    <input id="captcha" formControlName="captcha" type="text" />
-    <div *ngIf="captcha?.touched && captcha?.invalid">
-      <small *ngIf="captcha?.errors?.required">CAPTCHA обязательно.</small>
-      <small *ngIf="captcha?.errors?.pattern">Только латинские буквы и цифры.</small>
-    </div>
-  </div>
 
-  <div>
+    <div>
+      <label for="email">E-mail*</label>
+      <input id="email" formControlName="email" type="email" />
+      <div *ngIf="email?.touched && email?.invalid">
+        <small *ngIf="email?.errors?.required">E-mail обязательно.</small>
+        <small *ngIf="email?.errors?.email">Неверный E-mail.</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="homePage">Home Page</label>
+      <input id="homePage" formControlName="homePage" type="url" />
+      <div *ngIf="homePage?.touched && homePage?.invalid">
+        <small *ngIf="homePage?.errors?.invalidUrl">Неверный URL.</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="captcha">CAPTCHA*</label>
+      <div>
+        <img
+          [src]="captchaImageUrl"
+          alt="CAPTCHA"
+          (click)="refreshCaptcha()"
+          title="Нажмите, чтобы обновить"
+          style="cursor: pointer"
+        />
+        <button type="button" (click)="refreshCaptcha()">Обновить CAPTCHA</button>
+      </div>
+      <input id="captcha" formControlName="captcha" type="text" />
+      <div *ngIf="captcha?.touched && captcha?.invalid">
+        <small *ngIf="captcha?.errors?.required">CAPTCHA обязательно.</small>
+        <small *ngIf="captcha?.errors?.pattern">Только латинские буквы и цифры.</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="text">Text*</label>
+      <quill-editor formControlName="text" [modules]="quillModules" style="height: 200px; width: 100%"></quill-editor>
+      <div *ngIf="text?.touched && text?.invalid">
+        <small *ngIf="text?.errors?.required">Заполните поле текста.</small>
+        <small *ngIf="text?.errors?.invalidHtml">Использованы запрещённые HTML теги.</small>
+      </div>
+    </div>
+
+    <div>
+      <label for="image">Добавить изображение</label>
+      <input id="image" type="file" (change)="onImageSelected($event)" accept=".jpg,.jpeg,.png,.gif" />
+      <div *ngIf="imageError" class="error text-danger">
+        {{ imageError }}
+      </div>
+      <div *ngIf="imagePreview">
+        <a href="javascript:void(0)" (click)="openImageLightbox()">
+          <img [src]="imagePreview" alt="Image Preview" width="320" height="240" style="cursor: pointer" />
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <label for="textFile">Добавить текстовый файл</label>
+      <input id="textFile" type="file" (change)="onTextFileSelected($event)" accept=".txt" />
+      <div *ngIf="textFileError" class="error text-danger">
+        {{ textFileError }}
+      </div>
+      <div *ngIf="textFileContent">
+        <pre>{{ textFileContent }}</pre>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Добавить комментарий</button>
+  </form>
+</ng-container>
+<ng-template #smallTemplate>
+  <form [formGroup]="addRecordForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <div class="input-group">
+          <span class="input-group-text" id="userName-addon">User Name*</span>
+          <input
+            id="userName"
+            formControlName="userName"
+            type="text"
+            class="form-control"
+            aria-label="User Name"
+            aria-describedby="userName-addon"
+            [ngClass]="{ 'is-invalid': userName?.touched && userName?.invalid }"
+          />
+        </div>
+        <div *ngIf="userName?.touched && userName?.invalid" class="invalid-feedback d-block">
+          <div *ngIf="userName?.errors?.required">User Name обязательно.</div>
+          <div *ngIf="userName?.errors?.pattern">Только латинские буквы и цифры.</div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <div class="input-group">
+          <span class="input-group-text" id="email-addon">Email*</span>
+          <input
+            id="email"
+            formControlName="email"
+            type="email"
+            class="form-control"
+            aria-label="Email"
+            aria-describedby="email-addon"
+            [ngClass]="{ 'is-invalid': email?.touched && email?.invalid }"
+          />
+        </div>
+        <div *ngIf="email?.touched && email?.invalid" class="invalid-feedback d-block">
+          <div *ngIf="email?.errors?.required">Email обязательно.</div>
+          <div *ngIf="email?.errors?.email">Email неверный.</div>
+        </div>
+      </div>
+      <div class="col-md-12 mb-3">
+        <div class="input-group">
+          <button type="button" class="btn btn-outline-secondary" type="button" (click)="refreshCaptcha()">
+            Refresh
+          </button>
+          <img
+            [src]="captchaImageUrl"
+            alt="CAPTCHA"
+            (click)="refreshCaptcha()"
+            title="Нажмите, чтобы обновить"
+            style="cursor: pointer"
+          />
+          <input
+            id="captcha"
+            formControlName="captcha"
+            type="text"
+            class="form-control"
+            aria-label="captcha"
+            aria-describedby="captcha-addon"
+            [ngClass]="{ 'is-invalid': captcha?.touched && captcha?.invalid }"
+          />
+        </div>
+        <div *ngIf="captcha?.touched && captcha?.invalid" class="invalid-feedback d-block">
+          <div *ngIf="captcha?.errors?.required">CAPTCHA обязательно.</div>
+          <div *ngIf="captcha?.errors?.pattern">Только латинские буквы и цифры.</div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <div class="input-group">
+          <label class="input-group-text" for="image">Image</label>
+          <input
+            type="file"
+            (change)="onImageSelected($event)"
+            accept=".jpg,.jpeg,.png,.gif"
+            class="form-control"
+            id="image"
+            aria-describedby="image"
+            aria-label="Upload"
+          />
+          <div *ngIf="imageError" class="error text-danger">
+            {{ imageError }}
+          </div>
+        </div>
+        <div *ngIf="imagePreview">
+          <a href="javascript:void(0)" (click)="openImageLightbox()">
+            <img [src]="imagePreview" alt="Image Preview" width="320" height="240" style="cursor: pointer" />
+          </a>
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <div class="input-group">
+          <label class="input-group-text" for="textFile">Text file</label>
+          <input
+            id="textFile"
+            type="file"
+            (change)="onTextFileSelected($event)"
+            accept=".txt"
+            class="form-control"
+            aria-describedby="textFile"
+            aria-label="Upload"
+          />
+          <div *ngIf="textFileError" class="error text-danger">
+            {{ textFileError }}
+          </div>
+        </div>
+      </div>
+    </div>
     <label for="text">Text*</label>
-    <quill-editor formControlName="text" [modules]="quillModules" style="height: 200px; width: 100%;"></quill-editor>
+    <quill-editor
+      formControlName="text"
+      [modules]="quillModules"
+      style="height: 100px; width: 100%; padding-left: 0px"
+    ></quill-editor>
     <div *ngIf="text?.touched && text?.invalid">
       <small *ngIf="text?.errors?.required">Заполните поле текста.</small>
       <small *ngIf="text?.errors?.invalidHtml">Использованы запрещённые HTML теги.</small>
     </div>
-  </div>
-
-  <div>
-    <label for="image">Добавить изображение</label>
-    <input id="image" type="file" (change)="onImageSelected($event)" accept=".jpg,.jpeg,.png,.gif" />
-    <div *ngIf="imageError" class="error text-danger">
-      {{ imageError }}
-    </div>
-    <div *ngIf="imagePreview">
-      <a href="javascript:void(0)" (click)="openImageLightbox()">
-        <img [src]="imagePreview" alt="Image Preview" width="320" height="240" style="cursor: pointer" />
-      </a>
-    </div>
-  </div>
-
-  <div>
-    <label for="textFile">Добавить текстовый файл</label>
-    <input id="textFile" type="file" (change)="onTextFileSelected($event)" accept=".txt" />
-    <div *ngIf="textFileError" class="error text-danger">
-      {{ textFileError }}
-    </div>
-    <div *ngIf="textFileContent">
-      <pre>{{ textFileContent }}</pre>
-    </div>
-  </div>
-
-  <button type="submit" class="btn btn-primary mt-3">Добавить комментарий</button>
-</form>
+    <button type="submit" class="btn btn-primary mt-3">Добавить комментарий</button>
+  </form>
+</ng-template>

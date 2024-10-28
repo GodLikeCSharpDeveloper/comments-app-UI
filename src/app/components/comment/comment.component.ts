@@ -1,14 +1,15 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { UserComment } from '../../common/models/UserComment';
 import { CommonModule } from '@angular/common';
 import { Lightbox, LightboxModule } from 'ngx-lightbox';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
+import { AddCommentComponent } from "../add-comment/add-comment.component";
 
 @Component({
   selector: 'app-comment',
   standalone: true,
-  imports: [CommonModule, LightboxModule],
+  imports: [CommonModule, LightboxModule, AddCommentComponent],
   templateUrl: './comment.component.html',
   styleUrls: ['./comment.component.scss'],
 })
@@ -23,7 +24,7 @@ export class CommentComponent implements OnChanges, OnDestroy {
   imageUrl: SafeUrl | null = null;
   private objectUrl: string | null = null;
 
-  constructor(private sanitizer: DomSanitizer, private lightbox: Lightbox) {}
+  constructor(private sanitizer: DomSanitizer, private lightbox: Lightbox, private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['comment']) {
@@ -39,10 +40,11 @@ export class CommentComponent implements OnChanges, OnDestroy {
         this.imageUrl = null;
       }
 
-      const cleanHtml = DOMPurify.sanitize(this.comment.text, {
+      let cleanHtml = DOMPurify.sanitize(this.comment.text, {
         ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
-        ALLOWED_ATTR: ['href', 'title', 'target']
+        ALLOWED_ATTR: ['href', 'title', 'target', 'class']
       });
+      cleanHtml = cleanHtml.replace(/<blockquote(?![^>]*class=")[^>]*>/gi, '<blockquote class="blockquote">');
       this.processedText = this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
       console.log(this.processedText);
     }
@@ -57,6 +59,8 @@ export class CommentComponent implements OnChanges, OnDestroy {
 
   toggleReply(): void {
     this.isReplying = !this.isReplying;
+    this.cdr.detectChanges();
+
   }
 
   onReplyAdded(reply: UserComment): void {
