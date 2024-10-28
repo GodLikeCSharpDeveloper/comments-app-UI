@@ -5,6 +5,7 @@ import { User } from '../../common/models/User';
 import { UserComment } from '../../common/models/UserComment';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { CommentComponent } from "../comment/comment.component";
+import { CommentService } from '../../common/services/CommentService/CommentService';
 
 @Component({
   selector: 'app-comments',
@@ -15,7 +16,9 @@ import { CommentComponent } from "../comment/comment.component";
 })
 export class CommentsComponent implements OnInit {
   comments: UserComment[] = [];
+  constructor(private commentService: CommentService){
 
+  }
   ngOnInit(): void {
     this.comments = Array.from({ length: 1 }, (_, i) => {
       const index = i + 1;
@@ -54,6 +57,7 @@ export class CommentsComponent implements OnInit {
   }
 
   addComment(newComment: UserComment): void {
+    this.commentService.uploadComment(newComment);
     this.comments.push(newComment);
   }
 
