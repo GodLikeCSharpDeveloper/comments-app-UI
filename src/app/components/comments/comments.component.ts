@@ -20,40 +20,40 @@ export class CommentsComponent implements OnInit {
 
   }
   ngOnInit(): void {
-    this.comments = Array.from({ length: 1 }, (_, i) => {
-      const index = i + 1;
-      return new UserComment(
-        `Комментарий ${index}`,
-        `captcha${index}`,
-        new User(`User${index}`, `user${index}@example.com`),
-        new Date(),
-        undefined,
-        undefined,
-        undefined,
-        [
-          new UserComment(
-            `Ответ на комментарий ${index}-1`,
-            `captcha${index}-1`,
-            new User(`ReplyUser${index}-1`, `reply${index}-1@example.com`),
-            new Date(),
-            undefined,
-            undefined,
-            undefined,
-            []
-          ),
-          new UserComment(
-            `Ответ на комментарий ${index}-2`,
-            `captcha${index}-2`,
-            new User(`ReplyUser${index}-2`, `reply${index}-2@example.com`),
-            new Date(),
-            undefined,
-            undefined,
-            undefined,
-            []
-          ),
-        ]
-      );
-    });
+    // this.comments = Array.from({ length: 1 }, (_, i) => {
+    //   const index = i + 1;
+    //   return new UserComment(
+    //     `Комментарий ${index}`,
+    //     `captcha${index}`,
+    //     new User(`User${index}`, `user${index}@example.com`),
+    //     new Date(),
+    //     undefined,
+    //     undefined,
+    //     undefined,
+    //     [
+    //       new UserComment(
+    //         `Ответ на комментарий ${index}-1`,
+    //         `captcha${index}-1`,
+    //         new User(`ReplyUser${index}-1`, `reply${index}-1@example.com`),
+    //         new Date(),
+    //         undefined,
+    //         undefined,
+    //         undefined,
+    //         []
+    //       ),
+    //       new UserComment(
+    //         `Ответ на комментарий ${index}-2`,
+    //         `captcha${index}-2`,
+    //         new User(`ReplyUser${index}-2`, `reply${index}-2@example.com`),
+    //         new Date(),
+    //         undefined,
+    //         undefined,
+    //         undefined,
+    //         []
+    //       ),
+    //     ]
+    //   );
+    // });
   }
 
   addComment(newComment: UserComment): void {

@@ -11,22 +11,30 @@ export class CommentService {
   constructor(private http: HttpClient) {}
   uploadComment(comment: UserComment) {
     const formData = new FormData();
-
-    formData.append('id', comment.id?.toString());
     formData.append('text', comment.text);
-    formData.append('createdAt', comment.createdAt?.toISOString());
     formData.append('captcha', comment.captcha);
-    formData.append('userId', comment.user.id?.toString());
-    formData.append('parentCommentId', comment.parentCommentId ? comment.parentCommentId?.toString() : '');
-    if (comment.textFile) formData.append('textFile', comment.textFile);
-    if (comment.image) formData.append('image', comment.image);
+    formData.append('userName', comment.user.userName);
+    formData.append('email', comment.user.email);
+    formData.append('homePage', comment.user.homePage ? comment.user.homePage : '');
+    if (comment.textFile) {
+      formData.append('textFile', comment.textFile);
+    }
 
-    return this.http.post(`${this.apiUrl}`, formData).pipe(
-      catchError(this.handleError)
-    );
-  }
-  private handleError(error: HttpErrorResponse) {
-    console.error('Error:', error);
-    return throwError(() => error);
+    if (comment.image) {
+      formData.append('image', comment.image);
+    }
+
+    if (comment.parentCommentId) {
+      formData.append('parentCommentId', comment.parentCommentId.toString());
+    }
+
+    return this.http.post(this.apiUrl, formData).subscribe({
+      next: response => {
+        console.log('Commentary successfuly uploaded', response);
+      },
+      error: error => {
+        console.error('Comment error while uploading', error);
+      },
+    });
   }
 }

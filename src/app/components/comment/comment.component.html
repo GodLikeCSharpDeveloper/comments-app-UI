@@ -1,14 +1,12 @@
-<!-- comment.component.html -->
 <div class="card mb-3" [ngClass]="{ 'shadow-sm': !isReply, 'ms-5': isReply }">
   <div class="card-body d-flex" style="padding: 10px; flex-wrap: wrap">
     <div class="flex-grow-1" style="min-width: 0">
-      <!-- Заголовок комментария -->
       <div class="d-flex justify-content-between align-items-center title-background" style="padding: 5px">
         <div class="d-inline d-flex align-items-center">
           <img
             [src]="comment.user.avatarUrl || 'assets/person-circle.svg'"
             alt="{{ comment.user.userName }}"
-            [ngClass]="{ 'avatar-large': !isReply, 'avatar': isReply }"
+            [ngClass]="{ 'avatar-large': !isReply, avatar: isReply }"
             width="40"
             height="40"
             class="rounded-circle"
@@ -35,13 +33,12 @@
           [src]="imageUrl"
           alt="Изображение комментария"
           class="img-fluid rounded"
-          style="max-width: 320px; cursor: pointer;"
+          style="max-width: 320px; cursor: pointer"
           (click)="openImageLightbox()"
           loading="lazy"
         />
       </div>
 
-      <!-- Кнопки действий -->
       <div>
         <button class="btn btn-link btn-sm text-primary" (click)="toggleReply()">
           <i class="bi bi-reply"></i> Reply
@@ -51,7 +48,6 @@
     </div>
   </div>
 
-  <!-- Ответы на комментарий -->
   <div *ngIf="comment.replies && comment.replies.length > 0">
     <app-comment
       *ngFor="let reply of comment.replies"
@@ -61,6 +57,5 @@
     ></app-comment>
   </div>
 
-  <!-- Форма ответа -->
-<app-add-comment *ngIf="isReplying" [useLargeTemplate]="false"></app-add-comment>
+  <app-add-comment *ngIf="isReplying" [parrentCommentId]="comment.id" [useLargeTemplate]="false" (commentAdded)="addComment($event)"></app-add-comment>
 </div>

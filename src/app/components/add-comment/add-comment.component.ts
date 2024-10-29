@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserComment } from '../../common/models/UserComment';
-import { User } from '../../common/models/User';
 import { QuillModule } from 'ngx-quill';
 import { CommentCustomValidator } from '../../common/services/ValidatorService/CommentCustomValidator';
 import { ImageProcessor } from '../../common/services/ImageService/ImageProcessor';
 import DOMPurify from 'dompurify';
+import { CreateCommentDto } from '../../common/models/CreateCommentDto';
 
 @Component({
   selector: 'app-add-comment',
@@ -16,8 +15,8 @@ import DOMPurify from 'dompurify';
   styleUrls: ['./add-comment.component.scss'],
 })
 export class AddCommentComponent {
-  @Output() commentAdded = new EventEmitter<UserComment>();
-
+  @Output() commentAdded = new EventEmitter<CreateCommentDto>();
+  @Input() parentCommentId?: number;
   addRecordForm: FormGroup;
 
   captchaImageUrl: string = '';
@@ -29,14 +28,10 @@ export class AddCommentComponent {
   selectedTextFile: File | null = null;
   textFileError: string = '';
   textFileContent: string = '';
-  
+  textInput?: HTMLInputElement;
+  imageInput?: HTMLInputElement;
   quillModules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'], 
-      ['blockquote'],   
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['clean']                             
-    ]
+    toolbar: [['bold', 'italic', 'underline'], ['blockquote'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']],
   };
 
   constructor(
@@ -54,7 +49,6 @@ export class AddCommentComponent {
       textFile: [null],
     });
 
-
     this.refreshCaptcha();
   }
 
@@ -62,7 +56,7 @@ export class AddCommentComponent {
     this.captchaImageUrl = `assets/captcha/${Date.now()}.png`;
   }
 
-  validateFile(file: File, allowedTypes: string[], maxSizeInKB: number): { valid: boolean, error: string | null } {
+  validateFile(file: File, allowedTypes: string[], maxSizeInKB: number): { valid: boolean; error: string | null } {
     if (!file) {
       return { valid: false, error: 'Файл не выбран.' };
     }
@@ -80,56 +74,59 @@ export class AddCommentComponent {
   }
 
   onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
+    this.imageInput = event.target as HTMLInputElement;
+    if (this.imageInput.files && this.imageInput.files.length > 0) {
+      const file = this.imageInput.files[0];
       const validation = this.validateFile(file, ['image/jpeg', 'image/png', 'image/gif'], 500);
 
       if (!validation.valid) {
         this.imageError = validation.error!;
         this.selectedImage = null;
         this.addRecordForm.patchValue({ image: null });
-        input.value = '';
+        this.imageInput.value = '';
         this.imagePreview = null;
         return;
       } else {
         this.imageError = '';
       }
-      this.imageProcessor.processImage(file, 320, 240).then(resizedBlob => {
-        if (resizedBlob) {
-          const resizedFile = new File([resizedBlob], file.name, {
-            type: file.type,
-            lastModified: Date.now(),
-          });
-          this.selectedImage = resizedFile;
-          this.addRecordForm.patchValue({ image: resizedFile });
-          
-          const previewReader = new FileReader();
-          previewReader.onload = () => {
-            this.imagePreview = previewReader.result;
-          };
-          previewReader.readAsDataURL(resizedFile);
-        }
-      }).catch(error => {
-        this.imageError = 'Ошибка при обработке изображения.';
-        this.selectedImage = null;
-        this.addRecordForm.patchValue({ image: null });
-        input.value = '';
-      });
+      this.imageProcessor
+        .processImage(file, 320, 240)
+        .then(resizedBlob => {
+          if (resizedBlob) {
+            const resizedFile = new File([resizedBlob], file.name, {
+              type: file.type,
+              lastModified: Date.now(),
+            });
+            this.selectedImage = resizedFile;
+            this.addRecordForm.patchValue({ image: resizedFile });
+
+            const previewReader = new FileReader();
+            previewReader.onload = () => {
+              this.imagePreview = previewReader.result;
+            };
+            previewReader.readAsDataURL(resizedFile);
+          }
+        })
+        .catch(error => {
+          this.imageError = 'Ошибка при обработке изображения.';
+          this.selectedImage = null;
+          this.addRecordForm.patchValue({ image: null });
+          if (this.imageInput) this.imageInput.value = '';
+        });
     }
   }
 
   onTextFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
+    this.textInput = event.target as HTMLInputElement;
+    if (this.textInput.files && this.textInput.files.length > 0) {
+      const file = this.textInput.files[0];
       const validation = this.validateFile(file, ['text/plain'], 100);
 
       if (!validation.valid) {
         this.textFileError = validation.error!;
         this.selectedTextFile = null;
         this.addRecordForm.patchValue({ textFile: null });
-        input.value = '';
+        this.textInput.value = '';
         return;
       } else {
         this.textFileError = '';
@@ -149,16 +146,17 @@ export class AddCommentComponent {
     if (this.addRecordForm.valid) {
       const cleanText = DOMPurify.sanitize(this.text?.value, {
         ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
-        ALLOWED_ATTR: ['href', 'title', 'target']
+        ALLOWED_ATTR: ['href', 'title', 'target'],
       });
-      const comment = new UserComment(
-        this.text?.value,
-        this.captcha?.value,
-        new User(this.userName?.value, this.email?.value),
-        new Date(),
-        this.selectedImage,
-        this.selectedTextFile
-      );
+      const comment: CreateCommentDto = {
+        text: cleanText,
+        captcha: this.captcha?.value,
+        userName: this.userName?.value,
+        email: this.email?.value,
+        image: this.selectedImage,
+        textFile: this.selectedTextFile,
+        parentCommentId: this.parentCommentId
+      };
       this.commentAdded.emit(comment);
       console.log(comment);
       this.addRecordForm.reset();
@@ -166,7 +164,8 @@ export class AddCommentComponent {
       this.textFileContent = '';
       this.selectedImage = null;
       this.selectedTextFile = null;
-
+      if (this.imageInput) this.imageInput.value = '';
+      if (this.textInput) this.textInput.value = '';
       this.refreshCaptcha();
     } else {
       this.addRecordForm.markAllAsTouched();
@@ -201,6 +200,5 @@ export class AddCommentComponent {
     return this.addRecordForm.get('textFile');
   }
 
-  openImageLightbox(): void {
-  }
+  openImageLightbox(): void {}
 }

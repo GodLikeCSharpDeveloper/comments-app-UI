@@ -5,6 +5,7 @@ import { Lightbox, LightboxModule } from 'ngx-lightbox';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
 import { AddCommentComponent } from "../add-comment/add-comment.component";
+import { CommentService } from '../../common/services/CommentService/CommentService';
 
 @Component({
   selector: 'app-comment',
@@ -24,7 +25,7 @@ export class CommentComponent implements OnChanges, OnDestroy {
   imageUrl: SafeUrl | null = null;
   private objectUrl: string | null = null;
 
-  constructor(private sanitizer: DomSanitizer, private lightbox: Lightbox, private cdr: ChangeDetectorRef) {}
+  constructor(private sanitizer: DomSanitizer, private lightbox: Lightbox, private cdr: ChangeDetectorRef, private commentService: CommentService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['comment']) {
@@ -62,7 +63,10 @@ export class CommentComponent implements OnChanges, OnDestroy {
     this.cdr.detectChanges();
 
   }
-
+  addComment(newComment: UserComment): void {
+    this.commentService.uploadComment(newComment);
+    this.comment.replies.push(newComment);
+  }
   onReplyAdded(reply: UserComment): void {
     this.isReplying = false;
     this.reply.emit(reply);
