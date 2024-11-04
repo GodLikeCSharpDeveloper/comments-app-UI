@@ -5,8 +5,8 @@ import { HomeComponent } from './components/home/home.component';
 import { AppComponent } from './app.component';
 
 export const routes: Routes = [
-  { path: 'comments', component: CommentsComponent },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: 'comments', component: CommentsComponent },
   { path: 'home', component: HomeComponent },
 ];
 

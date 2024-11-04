@@ -5,6 +5,8 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { UserComment } from '../../common/models/UserComment';
 import { User } from '../../common/models/User';
 import { CommonModule } from '@angular/common';
+import { CommentService } from '../../common/services/CommentService/CommentService';
+import { finalize } from 'rxjs/internal/operators/finalize';
 
 @Component({
   selector: 'app-home',
@@ -22,7 +24,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor() {}
+  constructor(private commentService: CommentService) {}
 
   ngOnInit(): void {
     this.dataSource.data = Array.from({ length: 100 }, (_, i) => {
@@ -53,16 +55,39 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
     this.dataSource.sortingDataAccessor = (item, property) => {
       switch (property) {
-        case 'userName': return item.user.userName;
-        case 'email': return item.user.email;
-        case 'createdAt': return item.createdAt.toString();
-        default: return '';
+        case 'userName':
+          return item.user.userName;
+        case 'email':
+          return item.user.email;
+        case 'createdAt':
+          return item.createdAt.toString();
+        default:
+          return '';
       }
     };
   }
-
   ngAfterViewInit() {
+    this.paginator.page.subscribe(() => {
+      this.onPageChange();
+    });
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
+  
+  onPageChange(): void {
+    const pageIndex = this.paginator.pageIndex;
+    const pageSize = this.paginator.pageSize;
+    this.commentService
+      .loadComments(pageIndex, pageSize)
+      .pipe(finalize(() => (this.dataSource.paginator = this.paginator)))
+      .subscribe({
+        next: (comments: UserComment[]) => {
+          this.dataSource.data = comments;
+        },
+        error: (error) => {
+          console.error('Error loading comments:', error);
+        },
+      });
+  }
+  
 }
