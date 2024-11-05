@@ -1,3 +1,5 @@
+import { UserComment } from "./UserComment";
+
 export class CreateCommentDto {
   constructor(
     public text: string,
@@ -7,6 +9,7 @@ export class CreateCommentDto {
     public homePage?: string,
     public image?: File | null,
     public textFile?: File | null,
+    public parentComment?: UserComment,
     public parentCommentId?: number
   ) {}
 }

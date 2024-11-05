@@ -55,6 +55,13 @@
       (reply)="onReplyAdded($event)"
     ></app-comment>
   </div>
+    <div appLazyLoad (visible)="loadImage(comment)">
+      <app-add-comment 
+        *ngIf="isReplying" 
+        [parentComment]="comment" 
+        [useLargeTemplate]="false" 
+        (commentAdded)="addComment($event)">
+      </app-add-comment>
+    </div>
 
-  <app-add-comment *ngIf="isReplying" [parrentCommentId]="comment.id" [useLargeTemplate]="false" (commentAdded)="addComment($event)"></app-add-comment>
-</div>
+  </div>

@@ -11,6 +11,8 @@ export class UserComment {
   parentCommentId?: number;
   parentComment?: UserComment;
   replies: UserComment[];
+  imageUrl?: string;
+  textUrl?: string;
 
   constructor(
     text: string = '',
@@ -20,7 +22,9 @@ export class UserComment {
     image?: File | null,
     textFile?: File | null,
     parentComment?: UserComment,
-    replies?: UserComment[]
+    replies?: UserComment[],
+    imageUrl?: string,
+    textUrl?: string
   ) {
     this.text = text;
     this.captcha = captcha;
@@ -30,5 +34,7 @@ export class UserComment {
     this.textFile = textFile;
     this.parentComment = parentComment;
     this.replies = replies || [];
+    this.imageUrl = imageUrl;
+    this.textUrl = textUrl;
   }
 }

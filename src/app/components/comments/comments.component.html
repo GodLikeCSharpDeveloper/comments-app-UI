@@ -6,8 +6,7 @@
   </div>
   <div class="row mt-4" *ngIf="comments.length > 0">
     <div *ngFor="let comment of comments" class="comment">
-      <app-comment [comment]="comment" (reply)="addReply($event)">
-      </app-comment>
+      <app-comment [comment]="comment" (reply)="addReply($event)"> </app-comment>
     </div>
   </div>
 </div>

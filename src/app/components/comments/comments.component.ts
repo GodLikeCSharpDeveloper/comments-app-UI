@@ -1,66 +1,53 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { User } from '../../common/models/User';
 import { UserComment } from '../../common/models/UserComment';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
-import { CommentComponent } from "../comment/comment.component";
+import { CommentComponent } from '../comment/comment.component';
 import { CommentService } from '../../common/services/CommentService/CommentService';
+import { Subscription } from 'rxjs';
+import { CreateCommentDto } from '../../common/models/CreateCommentDto';
+import { CommentUtilityService } from '../../common/services/CommentUtility/CommentUtilityService';
+import { LazyLoadDirective } from '../../common/directives/lazyLoad.directive';
 
 @Component({
   selector: 'app-comments',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddCommentComponent, CommentComponent],
+  imports: [CommonModule, FormsModule, AddCommentComponent, CommentComponent, LazyLoadDirective],
   templateUrl: './comments.component.html',
   styleUrls: ['./comments.component.scss'],
 })
-export class CommentsComponent implements OnInit {
+export class CommentsComponent implements OnInit, OnDestroy {
   comments: UserComment[] = [];
-  constructor(private commentService: CommentService){
-
+  subscriptions: Subscription = new Subscription();
+  constructor(private commentService: CommentService, private commentUtilityService: CommentUtilityService) {}
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
   ngOnInit(): void {
-    // this.comments = Array.from({ length: 1 }, (_, i) => {
-    //   const index = i + 1;
-    //   return new UserComment(
-    //     `Комментарий ${index}`,
-    //     `captcha${index}`,
-    //     new User(`User${index}`, `user${index}@example.com`),
-    //     new Date(),
-    //     undefined,
-    //     undefined,
-    //     undefined,
-    //     [
-    //       new UserComment(
-    //         `Ответ на комментарий ${index}-1`,
-    //         `captcha${index}-1`,
-    //         new User(`ReplyUser${index}-1`, `reply${index}-1@example.com`),
-    //         new Date(),
-    //         undefined,
-    //         undefined,
-    //         undefined,
-    //         []
-    //       ),
-    //       new UserComment(
-    //         `Ответ на комментарий ${index}-2`,
-    //         `captcha${index}-2`,
-    //         new User(`ReplyUser${index}-2`, `reply${index}-2@example.com`),
-    //         new Date(),
-    //         undefined,
-    //         undefined,
-    //         undefined,
-    //         []
-    //       ),
-    //     ]
-    //   );
-    // });
+    this.subscriptions.add(
+      this.commentService.loadAllComments().subscribe({
+        next: (comments: UserComment[]) => {
+          this.comments = comments;
+        },
+        error: error => {
+          console.error('Error loading comments:', error);
+        },
+      })
+    );
   }
 
-  addComment(newComment: UserComment): void {
-    this.commentService.uploadComment(newComment);
-    this.comments.push(newComment);
+  addComment(newComment: CreateCommentDto): void {
+    this.subscriptions.add(
+      this.commentService.uploadComment(newComment).subscribe({
+        error: error => {
+          console.error('Error loading comments:', error);
+        },
+      })
+    );
+    this.comments.push(this.commentUtilityService.convertCreateCommentDtoToComment(newComment));
   }
-
   addReply(parentComment: UserComment, reply: UserComment): void {
     if (!parentComment.replies) {
       parentComment.replies = [];

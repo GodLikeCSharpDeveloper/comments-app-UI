@@ -6,6 +6,7 @@ import { CommentCustomValidator } from '../../common/services/ValidatorService/C
 import { ImageProcessor } from '../../common/services/ImageService/ImageProcessor';
 import DOMPurify from 'dompurify';
 import { CreateCommentDto } from '../../common/models/CreateCommentDto';
+import { UserComment } from '../../common/models/UserComment';
 
 @Component({
   selector: 'app-add-comment',
@@ -16,7 +17,7 @@ import { CreateCommentDto } from '../../common/models/CreateCommentDto';
 })
 export class AddCommentComponent {
   @Output() commentAdded = new EventEmitter<CreateCommentDto>();
-  @Input() parentCommentId?: number;
+  @Input() parentComment?: UserComment;
   addRecordForm: FormGroup;
 
   captchaImageUrl: string = '';
@@ -155,11 +156,12 @@ export class AddCommentComponent {
         email: this.email?.value,
         image: this.selectedImage,
         textFile: this.selectedTextFile,
-        parentCommentId: this.parentCommentId
+        parentComment: this.parentComment,
+        parentCommentId: this.parentComment?.id
       };
       this.commentAdded.emit(comment);
       console.log(comment);
-      this.addRecordForm.reset();
+      //this.addRecordForm.reset();
       this.imagePreview = null;
       this.textFileContent = '';
       this.selectedImage = null;
