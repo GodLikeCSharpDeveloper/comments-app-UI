@@ -3,19 +3,19 @@ import { UserComment } from '../../models/UserComment';
 import { HttpClient, HttpErrorResponse, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, Observable, switchMap, throwError } from 'rxjs';
 import { CreateCommentDto } from '../../models/CreateCommentDto';
+import { apiUrl } from '../../../app.component';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CommentService {
-  private apiUrl = 'https://localhost:8081/comments';
+
 
   constructor(private http: HttpClient) {}
 
   uploadComment(comment: CreateCommentDto): Observable<void> {
     const formData = new FormData();
     formData.append('text', comment.text);
-    formData.append('captcha', comment.captcha);
     formData.append('userName', comment.userName);
     formData.append('email', comment.email);
     formData.append('homePage', comment.homePage ? comment.homePage : '');
@@ -25,11 +25,13 @@ export class CommentService {
     if (comment.image) {
       formData.append('image', comment.image);
     }
-    if (comment.parentComment) {
-      formData.append('parentCommentId', comment.parentComment.id.toString());
-    }
+     if (comment.parentComment?.id) {
+       formData.append('parentCommentId', comment.parentComment.id.toString());
+     }
+     else if(comment.parentCommentId)
+       formData.append('parentCommentId', comment.parentCommentId.toString());
 
-    return this.http.post<void>(`${this.apiUrl}/post`, formData);
+    return this.http.post<void>(`${apiUrl}/post`, formData);
   }
 
   loadComments(
@@ -39,18 +41,23 @@ export class CommentService {
     orderProperty: string
   ): Observable<UserComment[]> {
     return this.http.get<UserComment[]>(
-      `${this.apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`
+      `${apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`
     );
   }
   loadAllComments(): Observable<UserComment[]> {
-    return this.http.get<UserComment[]>(`${this.apiUrl}/all`);
+    return this.http.get<UserComment[]>(`${apiUrl}/all`);
   }
   countComments(): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/count`);
+    return this.http.get<number>(`${apiUrl}/count`);
   }
   getPreSignedUrl(fileName: string): Observable<string> {
     const params = new HttpParams().set('filePath', fileName);
-    return this.http.get(`${this.apiUrl}/fileUrl`, { params, responseType: 'text' });
+    return this.http.get(`${apiUrl}/fileUrl`, { params, responseType: 'text' });
+  }
+  getLastCommentAddedId(email: string): Observable<number> {
+    return this.http.get<number>(`${apiUrl}/lastComment`, {
+      params: { email }
+    });
   }
   async downloadFile(preSignedUrl: string, fileName: string): Promise<File> {
     try {

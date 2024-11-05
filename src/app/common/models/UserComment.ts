@@ -4,7 +4,6 @@ export class UserComment {
   id!: number;
   text: string;
   createdAt: Date;
-  captcha: string;
   textFile?: File | null;
   image?: File | null;
   user: User;
@@ -16,7 +15,6 @@ export class UserComment {
 
   constructor(
     text: string = '',
-    captcha: string = '',
     user: User = new User(),
     createdAt: Date = new Date(),
     image?: File | null,
@@ -27,7 +25,6 @@ export class UserComment {
     textUrl?: string
   ) {
     this.text = text;
-    this.captcha = captcha;
     this.user = user;
     this.createdAt = createdAt;
     this.image = image;

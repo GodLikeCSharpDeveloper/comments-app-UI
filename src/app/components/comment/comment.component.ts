@@ -18,7 +18,7 @@ import { CommentService } from '../../common/services/CommentService/CommentServ
 import { CreateCommentDto } from '../../common/models/CreateCommentDto';
 import { User } from '../../common/models/User';
 import { CommentUtilityService } from '../../common/services/CommentUtility/CommentUtilityService';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap } from 'rxjs';
 import { LazyLoadDirective } from '../../common/directives/lazyLoad.directive';
 import { HttpResponse } from '@angular/common/http';
 
@@ -99,13 +99,21 @@ export class CommentComponent implements OnChanges, OnDestroy {
   }
   addComment(newComment: CreateCommentDto): void {
     this.subscriptions.add(
-      this.commentService.uploadComment(newComment).subscribe({
-        error: error => {
-          console.error('Error loading comments:', error);
-        },
-      })
+      this.commentService
+        .uploadComment(newComment)
+        .pipe(switchMap(() => this.commentService.getLastCommentAddedId(newComment.email)))
+        .subscribe({
+          next: (lastCommentId: any) => {
+            const comment = this.commentUtilityService.convertCreateCommentDtoToComment(newComment);
+            comment.parentCommentId = lastCommentId;
+            console.log(lastCommentId);
+            this.comment.replies.push(comment);
+          },
+          error: error => {
+            console.error('Error adding comment:', error);
+          },
+        })
     );
-    this.comment.replies.push(this.commentUtilityService.convertCreateCommentDtoToComment(newComment));
   }
 
   onReplyAdded(reply: UserComment): void {

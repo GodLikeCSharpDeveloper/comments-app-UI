@@ -1,3 +1,4 @@
+import { RecaptchaService } from './../../common/services/RecaptchaService';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -38,23 +39,17 @@ export class AddCommentComponent {
   constructor(
     private fb: FormBuilder,
     private commentValidator: CommentCustomValidator,
-    private imageProcessor: ImageProcessor
+    private imageProcessor: ImageProcessor,
+    private recaptchaService: RecaptchaService
   ) {
     this.addRecordForm = this.fb.group({
       userName: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9]+$')]],
       email: ['', [Validators.required, Validators.email]],
       homePage: ['', [this.commentValidator.optionalUrlValidator()]],
-      captcha: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9]+$')]],
       text: ['', [Validators.required, this.commentValidator.allowedHtmlValidator()]],
       image: [null],
       textFile: [null],
     });
-
-    this.refreshCaptcha();
-  }
-
-  refreshCaptcha(): void {
-    this.captchaImageUrl = `assets/captcha/${Date.now()}.png`;
   }
 
   validateFile(file: File, allowedTypes: string[], maxSizeInKB: number): { valid: boolean; error: string | null } {
@@ -144,34 +139,34 @@ export class AddCommentComponent {
   }
 
   onSubmit(): void {
-    if (this.addRecordForm.valid) {
-      const cleanText = DOMPurify.sanitize(this.text?.value, {
-        ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
-        ALLOWED_ATTR: ['href', 'title', 'target'],
-      });
-      const comment: CreateCommentDto = {
-        text: cleanText,
-        captcha: this.captcha?.value,
-        userName: this.userName?.value,
-        email: this.email?.value,
-        image: this.selectedImage,
-        textFile: this.selectedTextFile,
-        parentComment: this.parentComment,
-        parentCommentId: this.parentComment?.id
-      };
-      this.commentAdded.emit(comment);
-      console.log(comment);
-      //this.addRecordForm.reset();
-      this.imagePreview = null;
-      this.textFileContent = '';
-      this.selectedImage = null;
-      this.selectedTextFile = null;
-      if (this.imageInput) this.imageInput.value = '';
-      if (this.textInput) this.textInput.value = '';
-      this.refreshCaptcha();
-    } else {
-      this.addRecordForm.markAllAsTouched();
-    }
+    this.recaptchaService.VerifyCaptcha('submit').then(result => {
+      if (this.addRecordForm.valid && result) {
+        const cleanText = DOMPurify.sanitize(this.text?.value, {
+          ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
+          ALLOWED_ATTR: ['href', 'title', 'target'],
+        });
+        const comment: CreateCommentDto = {
+          text: cleanText,
+          userName: this.userName?.value,
+          email: this.email?.value,
+          image: this.selectedImage,
+          textFile: this.selectedTextFile,
+          parentComment: this.parentComment,
+          parentCommentId: this.parentComment?.id,
+        };
+        this.commentAdded.emit(comment);
+        console.log(comment);
+        //this.addRecordForm.reset();
+        this.imagePreview = null;
+        this.textFileContent = '';
+        this.selectedImage = null;
+        this.selectedTextFile = null;
+        if (this.imageInput) this.imageInput.value = '';
+        if (this.textInput) this.textInput.value = '';
+      } else {
+        this.addRecordForm.markAllAsTouched();
+      }
+    });
   }
 
   get userName(): AbstractControl | null {

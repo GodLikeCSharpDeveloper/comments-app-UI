@@ -11,7 +11,6 @@ export class CommentUtilityService {
     var user = new User(commentDto.userName, commentDto.email, commentDto.homePage);
     var comment = new UserComment(
       commentDto.text,
-      commentDto.captcha,
       user,
       new Date(),
       commentDto.image,

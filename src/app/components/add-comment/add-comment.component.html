@@ -27,25 +27,6 @@
     </div>
 
     <div>
-      <label for="captcha">CAPTCHA*</label>
-      <div>
-        <img
-          [src]="captchaImageUrl"
-          alt="CAPTCHA"
-          (click)="refreshCaptcha()"
-          title="Нажмите, чтобы обновить"
-          style="cursor: pointer"
-        />
-        <button type="button" (click)="refreshCaptcha()">Обновить CAPTCHA</button>
-      </div>
-      <input id="captcha" formControlName="captcha" type="text" />
-      <div *ngIf="captcha?.touched && captcha?.invalid">
-        <small *ngIf="captcha?.errors?.required">CAPTCHA обязательно.</small>
-        <small *ngIf="captcha?.errors?.pattern">Только латинские буквы и цифры.</small>
-      </div>
-    </div>
-
-    <div>
       <label for="text">Text*</label>
       <quill-editor formControlName="text" [modules]="quillModules" style="height: 200px; width: 100%"></quill-editor>
       <div *ngIf="text?.touched && text?.invalid">
@@ -118,33 +99,6 @@
         <div *ngIf="email?.touched && email?.invalid" class="invalid-feedback d-block">
           <div *ngIf="email?.errors?.required">Email обязательно.</div>
           <div *ngIf="email?.errors?.email">Email неверный.</div>
-        </div>
-      </div>
-      <div class="col-md-12 mb-3">
-        <div class="input-group">
-          <button type="button" class="btn btn-outline-secondary" type="button" (click)="refreshCaptcha()">
-            Refresh
-          </button>
-          <img
-            [src]="captchaImageUrl"
-            alt="CAPTCHA"
-            (click)="refreshCaptcha()"
-            title="Нажмите, чтобы обновить"
-            style="cursor: pointer"
-          />
-          <input
-            id="captcha"
-            formControlName="captcha"
-            type="text"
-            class="form-control"
-            aria-label="captcha"
-            aria-describedby="captcha-addon"
-            [ngClass]="{ 'is-invalid': captcha?.touched && captcha?.invalid }"
-          />
-        </div>
-        <div *ngIf="captcha?.touched && captcha?.invalid" class="invalid-feedback d-block">
-          <div *ngIf="captcha?.errors?.required">CAPTCHA обязательно.</div>
-          <div *ngIf="captcha?.errors?.pattern">Только латинские буквы и цифры.</div>
         </div>
       </div>
       <div class="col-md-6 mb-3">
