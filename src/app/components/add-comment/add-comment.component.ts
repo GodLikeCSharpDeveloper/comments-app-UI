@@ -54,17 +54,17 @@ export class AddCommentComponent {
 
   validateFile(file: File, allowedTypes: string[], maxSizeInKB: number): { valid: boolean; error: string | null } {
     if (!file) {
-      return { valid: false, error: 'Файл не выбран.' };
+      return { valid: false, error: 'You did not choose a file.' };
     }
-
+    
     if (!allowedTypes.includes(file.type)) {
-      return { valid: false, error: `Недопустимый тип файла. Разрешены: ${allowedTypes.join(', ')}.` };
+      return { valid: false, error: `Invalid file type. Allowed: ${allowedTypes.join(', ')}.` };
     }
-
+    
     const fileSizeInKB = file.size / 1024;
     if (fileSizeInKB > maxSizeInKB) {
-      return { valid: false, error: `Размер файла превышает допустимые ${maxSizeInKB}KB.` };
-    }
+      return { valid: false, error: `File size exceeds the limit of ${maxSizeInKB}KB.` };
+    }    
 
     return { valid: true, error: null };
   }
@@ -104,7 +104,7 @@ export class AddCommentComponent {
           }
         })
         .catch(error => {
-          this.imageError = 'Ошибка при обработке изображения.';
+          this.imageError = 'Error while processing image.';
           this.selectedImage = null;
           this.addRecordForm.patchValue({ image: null });
           if (this.imageInput) this.imageInput.value = '';
@@ -155,8 +155,7 @@ export class AddCommentComponent {
           parentCommentId: this.parentComment?.id,
         };
         this.commentAdded.emit(comment);
-        console.log(comment);
-        //this.addRecordForm.reset();
+        this.addRecordForm.reset();
         this.imagePreview = null;
         this.textFileContent = '';
         this.selectedImage = null;

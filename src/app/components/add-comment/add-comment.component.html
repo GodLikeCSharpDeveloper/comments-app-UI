@@ -4,8 +4,8 @@
       <label for="userName">User Name*</label>
       <input id="userName" formControlName="userName" type="text" />
       <div *ngIf="userName?.touched && userName?.invalid">
-        <small *ngIf="userName?.errors?.required">User Name обязательно.</small>
-        <small *ngIf="userName?.errors?.pattern">Только латинские буквы и цифры.</small>
+        <small *ngIf="userName?.errors?.required">User Name is required.</small>
+        <small *ngIf="userName?.errors?.pattern">Only Latin letters and numbers are allowed.</small>
       </div>
     </div>
 
@@ -13,8 +13,8 @@
       <label for="email">E-mail*</label>
       <input id="email" formControlName="email" type="email" />
       <div *ngIf="email?.touched && email?.invalid">
-        <small *ngIf="email?.errors?.required">E-mail обязательно.</small>
-        <small *ngIf="email?.errors?.email">Неверный E-mail.</small>
+        <small *ngIf="email?.errors?.required">E-mail is required.</small>
+        <small *ngIf="email?.errors?.email">Invalid E-mail.</small>
       </div>
     </div>
 
@@ -22,7 +22,7 @@
       <label for="homePage">Home Page</label>
       <input id="homePage" formControlName="homePage" type="url" />
       <div *ngIf="homePage?.touched && homePage?.invalid">
-        <small *ngIf="homePage?.errors?.invalidUrl">Неверный URL.</small>
+        <small *ngIf="homePage?.errors?.invalidUrl">Invalid URL.</small>
       </div>
     </div>
 
@@ -30,13 +30,13 @@
       <label for="text">Text*</label>
       <quill-editor formControlName="text" [modules]="quillModules" style="height: 200px; width: 100%"></quill-editor>
       <div *ngIf="text?.touched && text?.invalid">
-        <small *ngIf="text?.errors?.required">Заполните поле текста.</small>
-        <small *ngIf="text?.errors?.invalidHtml">Использованы запрещённые HTML теги.</small>
+        <small *ngIf="text?.errors?.required">Please fill in the text field.</small>
+        <small *ngIf="text?.errors?.invalidHtml">Forbidden HTML tags used.</small>
       </div>
     </div>
 
     <div>
-      <label for="image">Добавить изображение</label>
+      <label for="image">Add Image</label>
       <input id="image" type="file" (change)="onImageSelected($event)" accept=".jpg,.jpeg,.png,.gif" />
       <div *ngIf="imageError" class="error text-danger">
         {{ imageError }}
@@ -49,7 +49,7 @@
     </div>
 
     <div>
-      <label for="textFile">Добавить текстовый файл</label>
+      <label for="textFile">Add Text File</label>
       <input id="textFile" type="file" (change)="onTextFileSelected($event)" accept=".txt" />
       <div *ngIf="textFileError" class="error text-danger">
         {{ textFileError }}
@@ -59,7 +59,7 @@
       </div>
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Добавить комментарий</button>
+    <button type="submit" class="btn btn-primary mt-3">Add Comment</button>
   </form>
 </ng-container>
 <ng-template #smallTemplate>
@@ -79,8 +79,8 @@
           />
         </div>
         <div *ngIf="userName?.touched && userName?.invalid" class="invalid-feedback d-block">
-          <div *ngIf="userName?.errors?.required">User Name обязательно.</div>
-          <div *ngIf="userName?.errors?.pattern">Только латинские буквы и цифры.</div>
+          <div *ngIf="userName?.errors?.required">User Name is required.</div>
+          <div *ngIf="userName?.errors?.pattern">Only Latin letters and numbers are allowed.</div>
         </div>
       </div>
       <div class="col-md-6 mb-3">
@@ -97,8 +97,8 @@
           />
         </div>
         <div *ngIf="email?.touched && email?.invalid" class="invalid-feedback d-block">
-          <div *ngIf="email?.errors?.required">Email обязательно.</div>
-          <div *ngIf="email?.errors?.email">Email неверный.</div>
+          <div *ngIf="email?.errors?.required">Email is required.</div>
+          <div *ngIf="email?.errors?.email">Invalid Email.</div>
         </div>
       </div>
       <div class="col-md-6 mb-3">
@@ -125,7 +125,7 @@
       </div>
       <div class="col-md-6 mb-3">
         <div class="input-group">
-          <label class="input-group-text" for="textFile">Text file</label>
+          <label class="input-group-text" for="textFile">Text File</label>
           <input
             id="textFile"
             type="file"
@@ -148,9 +148,9 @@
       style="height: 100px; width: 100%; padding-left: 0px"
     ></quill-editor>
     <div *ngIf="text?.touched && text?.invalid">
-      <small *ngIf="text?.errors?.required">Заполните поле текста.</small>
-      <small *ngIf="text?.errors?.invalidHtml">Использованы запрещённые HTML теги.</small>
+      <small *ngIf="text?.errors?.required">Please fill in the text field.</small>
+      <small *ngIf="text?.errors?.invalidHtml">Forbidden HTML tags used.</small>
     </div>
-    <button type="submit" class="btn btn-primary mt-3">Добавить комментарий</button>
+    <button type="submit" class="btn btn-primary mt-3">Add Comment</button>
   </form>
 </ng-template>
