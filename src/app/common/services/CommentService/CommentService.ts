@@ -10,6 +10,9 @@ import { apiUrl } from '../../../app.component';
 })
 export class CommentService {
 
+  private ngrokHeader = new HttpHeaders({
+    'ngrok-skip-browser-warning': 'true' // Значение может быть любым
+  });
 
   constructor(private http: HttpClient) {}
 
@@ -25,15 +28,14 @@ export class CommentService {
     if (comment.image) {
       formData.append('image', comment.image);
     }
-     if (comment.parentComment?.id) {
-       formData.append('parentCommentId', comment.parentComment.id.toString());
-     }
-     else if(comment.parentCommentId)
-       formData.append('parentCommentId', comment.parentCommentId.toString());
+    if (comment.parentComment?.id) {
+      formData.append('parentCommentId', comment.parentComment.id.toString());
+    }
+    else if(comment.parentCommentId)
+      formData.append('parentCommentId', comment.parentCommentId.toString());
 
-    return this.http.post<void>(`${apiUrl}/post`, formData);
+    return this.http.post<void>(`${apiUrl}/post`, formData, { headers: this.ngrokHeader });
   }
-
   loadComments(
     pageNumber: number,
     pageSize: number,
@@ -41,24 +43,29 @@ export class CommentService {
     orderProperty: string
   ): Observable<UserComment[]> {
     return this.http.get<UserComment[]>(
-      `${apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`
+      `${apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`,
+      {headers: this.ngrokHeader}
     );
   }
+
   loadAllComments(): Observable<UserComment[]> {
-    return this.http.get<UserComment[]>(`${apiUrl}/all`);
+    return this.http.get<UserComment[]>(`${apiUrl}/all`, { headers: this.ngrokHeader });
   }
+
   countComments(): Observable<number> {
-    return this.http.get<number>(`${apiUrl}/count`);
+    return this.http.get<number>(`${apiUrl}/count`, { headers: this.ngrokHeader });
   }
+
   getPreSignedUrl(fileName: string): Observable<string> {
     const params = new HttpParams().set('filePath', fileName);
-    return this.http.get(`${apiUrl}/fileUrl`, { params, responseType: 'text' });
+    return this.http.get(`${apiUrl}/fileUrl`, { params, responseType: 'text', headers: this.ngrokHeader });
   }
+
   getLastCommentAddedId(email: string): Observable<number> {
-    return this.http.get<number>(`${apiUrl}/lastComment`, {
-      params: { email }
-    });
+    const params = new HttpParams().set('email', email);
+    return this.http.get<number>(`${apiUrl}/lastComment`, { params, headers: this.ngrokHeader });
   }
+
   async downloadFile(preSignedUrl: string, fileName: string): Promise<File> {
     try {
       const response = await fetch(preSignedUrl, {
