@@ -15,4 +15,4 @@ import { HttpClientModule } from '@angular/common/http';
 export class AppComponent {
   title = 'comments-app-UI';
 }
-export const apiUrl = 'https://localhost:8081/comments';
+export const apiUrl = 'http://localhost:8080/comments';
