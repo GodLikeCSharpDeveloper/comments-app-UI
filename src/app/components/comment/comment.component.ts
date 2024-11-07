@@ -11,16 +11,13 @@ import {
 import { UserComment } from '../../common/models/UserComment';
 import { CommonModule } from '@angular/common';
 import { Lightbox, LightboxModule } from 'ngx-lightbox';
-import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
-import DOMPurify from 'dompurify';
+import { SafeHtml, SafeUrl } from '@angular/platform-browser';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { CommentService } from '../../common/services/CommentService/CommentService';
 import { CreateCommentDto } from '../../common/models/CreateCommentDto';
-import { User } from '../../common/models/User';
 import { CommentUtilityService } from '../../common/services/CommentUtility/CommentUtilityService';
 import { Subscription, switchMap } from 'rxjs';
 import { LazyLoadDirective } from '../../common/directives/lazyLoad.directive';
-import { HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-comment',
@@ -41,15 +38,13 @@ export class CommentComponent implements OnChanges, OnDestroy {
   private objectUrl: string | null = null;
 
   constructor(
-    private sanitizer: DomSanitizer,
     private lightbox: Lightbox,
     private cdr: ChangeDetectorRef,
     private commentService: CommentService,
     private commentUtilityService: CommentUtilityService
   ) {}
   initializeImage(image: File) {
-    this.objectUrl = URL.createObjectURL(image);
-    this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+    this.imageUrl = this.commentUtilityService.initializeImageFromFile(image);
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['comment']) {
@@ -57,20 +52,12 @@ export class CommentComponent implements OnChanges, OnDestroy {
         URL.revokeObjectURL(this.objectUrl);
         this.objectUrl = null;
       }
-
       if (this.comment.image) {
-        this.objectUrl = URL.createObjectURL(this.comment.image);
-        this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(this.objectUrl);
+        this.imageUrl = this.commentUtilityService.initializeImageFromFile(this.comment.image);
       } else {
         this.imageUrl = null;
       }
-
-      let cleanHtml = DOMPurify.sanitize(this.comment.text, {
-        ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
-        ALLOWED_ATTR: ['href', 'title', 'target', 'class'],
-      });
-      cleanHtml = cleanHtml.replace(/<blockquote(?![^>]*class=")[^>]*>/gi, '<blockquote class="blockquote">');
-      this.processedText = this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+      this.processedText = this.commentUtilityService.addBlockquoteClassToCleanHtml(this.comment.text);
     }
   }
   loadImage(comment: UserComment) {
@@ -103,7 +90,7 @@ export class CommentComponent implements OnChanges, OnDestroy {
         .uploadComment(newComment)
         .pipe(switchMap(() => this.commentService.getLastCommentAddedId(newComment.email)))
         .subscribe({
-          next: (lastCommentId: any) => {
+          next: (lastCommentId: number) => {
             const comment = this.commentUtilityService.convertCreateCommentDtoToComment(newComment);
             comment.parentCommentId = lastCommentId;
             console.log(lastCommentId);

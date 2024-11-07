@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { UserComment } from '../../models/UserComment';
-import { HttpClient, HttpErrorResponse, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
-import { catchError, map, Observable, switchMap, throwError } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { CreateCommentDto } from '../../models/CreateCommentDto';
 import { apiUrl } from '../../../app.component';
 

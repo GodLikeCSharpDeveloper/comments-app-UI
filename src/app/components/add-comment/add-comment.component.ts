@@ -5,9 +5,9 @@ import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModu
 import { QuillModule } from 'ngx-quill';
 import { CommentCustomValidator } from '../../common/services/ValidatorService/CommentCustomValidator';
 import { ImageProcessor } from '../../common/services/ImageService/ImageProcessor';
-import DOMPurify from 'dompurify';
 import { CreateCommentDto } from '../../common/models/CreateCommentDto';
 import { UserComment } from '../../common/models/UserComment';
+import { CommentUtilityService } from '../../common/services/CommentUtility/CommentUtilityService';
 
 @Component({
   selector: 'app-add-comment',
@@ -33,14 +33,15 @@ export class AddCommentComponent {
   textInput?: HTMLInputElement;
   imageInput?: HTMLInputElement;
   quillModules = {
-    toolbar: [['bold', 'italic', 'underline'], ['blockquote'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']],
+    toolbar: [['bold', 'italic', 'underline'], ['blockquote'], [{ list: 'ordered' }], ['clean']],
   };
 
   constructor(
     private fb: FormBuilder,
     private commentValidator: CommentCustomValidator,
     private imageProcessor: ImageProcessor,
-    private recaptchaService: RecaptchaService
+    private recaptchaService: RecaptchaService,
+    private commentUtilityService: CommentUtilityService
   ) {
     this.addRecordForm = this.fb.group({
       userName: ['', [Validators.required, Validators.pattern('^[A-Za-z0-9]+$')]],
@@ -52,28 +53,13 @@ export class AddCommentComponent {
     });
   }
 
-  validateFile(file: File, allowedTypes: string[], maxSizeInKB: number): { valid: boolean; error: string | null } {
-    if (!file) {
-      return { valid: false, error: 'You did not choose a file.' };
-    }
-    
-    if (!allowedTypes.includes(file.type)) {
-      return { valid: false, error: `Invalid file type. Allowed: ${allowedTypes.join(', ')}.` };
-    }
-    
-    const fileSizeInKB = file.size / 1024;
-    if (fileSizeInKB > maxSizeInKB) {
-      return { valid: false, error: `File size exceeds the limit of ${maxSizeInKB}KB.` };
-    }    
-
-    return { valid: true, error: null };
-  }
+  
 
   onImageSelected(event: Event): void {
     this.imageInput = event.target as HTMLInputElement;
     if (this.imageInput.files && this.imageInput.files.length > 0) {
       const file = this.imageInput.files[0];
-      const validation = this.validateFile(file, ['image/jpeg', 'image/png', 'image/gif'], 500);
+      const validation = this.commentUtilityService.validateFile(file, ['image/jpeg', 'image/png', 'image/gif'], 500);
 
       if (!validation.valid) {
         this.imageError = validation.error!;
@@ -103,7 +89,7 @@ export class AddCommentComponent {
             previewReader.readAsDataURL(resizedFile);
           }
         })
-        .catch(error => {
+        .catch(() => {
           this.imageError = 'Error while processing image.';
           this.selectedImage = null;
           this.addRecordForm.patchValue({ image: null });
@@ -116,7 +102,7 @@ export class AddCommentComponent {
     this.textInput = event.target as HTMLInputElement;
     if (this.textInput.files && this.textInput.files.length > 0) {
       const file = this.textInput.files[0];
-      const validation = this.validateFile(file, ['text/plain'], 100);
+      const validation = this.commentUtilityService.validateFile(file, ['text/plain'], 100);
 
       if (!validation.valid) {
         this.textFileError = validation.error!;
@@ -138,35 +124,57 @@ export class AddCommentComponent {
     }
   }
 
-  onSubmit(): void {
-    this.recaptchaService.VerifyCaptcha('submit').then(result => {
-      if (this.addRecordForm.valid && result) {
-        const cleanText = DOMPurify.sanitize(this.text?.value, {
-          ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'blockquote', 'ul', 'ol', 'li', 'a'],
-          ALLOWED_ATTR: ['href', 'title', 'target'],
-        });
-        const comment: CreateCommentDto = {
-          text: cleanText,
-          userName: this.userName?.value,
-          email: this.email?.value,
-          image: this.selectedImage,
-          textFile: this.selectedTextFile,
-          parentComment: this.parentComment,
-          parentCommentId: this.parentComment?.id,
-        };
-        this.commentAdded.emit(comment);
-        this.addRecordForm.reset();
-        this.imagePreview = null;
-        this.textFileContent = '';
-        this.selectedImage = null;
-        this.selectedTextFile = null;
-        if (this.imageInput) this.imageInput.value = '';
-        if (this.textInput) this.textInput.value = '';
-      } else {
-        this.addRecordForm.markAllAsTouched();
+  async onSubmit(): Promise<void> {
+    try {
+      const isCaptchaValid = await this.recaptchaService.VerifyCaptcha('submit');
+      if (!this.isFormValid() || !isCaptchaValid) {
+        this.markFormAsTouched();
+        return;
       }
-    });
+      const comment = this.createComment();
+      this.commentAdded.emit(comment);
+      this.resetFormAndFields();
+    } catch (error) {
+      console.error('Error while sending comment:', error);
+    }
   }
+  
+  private isFormValid(): boolean {
+    return this.addRecordForm.valid;
+  }
+  
+  private markFormAsTouched(): void {
+    this.addRecordForm.markAllAsTouched();
+  }
+  
+  private createComment(): CreateCommentDto {
+    const cleanText = this.commentUtilityService.sanitizeText(this.text?.value);
+    return {
+      text: cleanText,
+      userName: this.userName?.value,
+      email: this.email?.value,
+      image: this.selectedImage,
+      textFile: this.selectedTextFile,
+      parentComment: this.parentComment,
+      parentCommentId: this.parentComment?.id,
+    };
+  }
+  
+  private resetFormAndFields(): void {
+    this.addRecordForm.reset();
+    this.imagePreview = null;
+    this.textFileContent = '';
+    this.selectedImage = null;
+    this.selectedTextFile = null;
+  
+    if (this.imageInput) {
+      this.imageInput.value = '';
+    }
+    if (this.textInput) {
+      this.textInput.value = '';
+    }
+  }
+  
 
   get userName(): AbstractControl | null {
     return this.addRecordForm.get('userName');

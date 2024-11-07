@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { User } from '../../common/models/User';
 import { UserComment } from '../../common/models/UserComment';
 import { AddCommentComponent } from '../add-comment/add-comment.component';
 import { CommentComponent } from '../comment/comment.component';
@@ -30,6 +29,7 @@ export class CommentsComponent implements OnInit, OnDestroy {
       this.commentService.loadAllComments().subscribe({
         next: (comments: UserComment[]) => {
           this.comments = comments;
+          console.log(comments);
         },
         error: error => {
           console.error('Error loading comments:', error);
@@ -44,7 +44,7 @@ export class CommentsComponent implements OnInit, OnDestroy {
         .uploadComment(newComment)
         .pipe(switchMap(() => this.commentService.getLastCommentAddedId(newComment.email)))
         .subscribe({
-          next: (lastCommentId: any) => {
+          next: (lastCommentId: number) => {
             const comment = this.commentUtilityService.convertCreateCommentDtoToComment(newComment);
             comment.parentCommentId = lastCommentId;
             this.comments.push(comment);

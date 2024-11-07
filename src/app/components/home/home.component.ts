@@ -3,10 +3,8 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { UserComment } from '../../common/models/UserComment';
-import { User } from '../../common/models/User';
 import { CommonModule } from '@angular/common';
 import { CommentService } from '../../common/services/CommentService/CommentService';
-import { finalize } from 'rxjs/internal/operators/finalize';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -53,7 +51,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.dataSource.sort = this.sort;
     this.countComments();
-    this.loadComments();
+    this.onPageChange();
   }
 
   onPageChange(): void {
