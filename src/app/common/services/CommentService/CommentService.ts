@@ -39,8 +39,8 @@ export class CommentService {
     orderProperty: string
   ): Observable<UserComment[]> {
     return this.http.get<UserComment[]>(
-      `${apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`
-    );
+      `${apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}&order=${sortDirection}&sortBy=${orderProperty}`,
+      { headers: this.ngrokHeader });
   }
   loadAllComments(): Observable<UserComment[]> {
     return this.http.get<UserComment[]>(`${apiUrl}/all`, { headers: this.ngrokHeader });

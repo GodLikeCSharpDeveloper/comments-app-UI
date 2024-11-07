@@ -14,4 +14,4 @@ import { HeaderComponent } from "./components/header/header.component";
 export class AppComponent {
   title = 'comments-app-UI';
 }
-export const apiUrl = 'http://localhost:8080/comments';
+export const apiUrl = 'https://1f19-46-211-210-156.ngrok-free.app/comments';
