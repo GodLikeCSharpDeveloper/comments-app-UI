@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { UserComment } from '../../models/UserComment';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateCommentDto } from '../../models/CreateCommentDto';
 import { apiUrl } from '../../../app.component';
@@ -9,10 +9,10 @@ import { apiUrl } from '../../../app.component';
   providedIn: 'root',
 })
 export class CommentService {
-
-
   constructor(private http: HttpClient) {}
-
+  private ngrokHeader = new HttpHeaders({
+    'ngrok-skip-browser-warning': 'true',
+  });
   uploadComment(comment: CreateCommentDto): Observable<void> {
     const formData = new FormData();
     formData.append('text', comment.text);
@@ -25,13 +25,11 @@ export class CommentService {
     if (comment.image) {
       formData.append('image', comment.image);
     }
-     if (comment.parentComment?.id) {
-       formData.append('parentCommentId', comment.parentComment.id.toString());
-     }
-     else if(comment.parentCommentId)
-       formData.append('parentCommentId', comment.parentCommentId.toString());
+    if (comment.parentComment?.id) {
+      formData.append('parentCommentId', comment.parentComment.id.toString());
+    } else if (comment.parentCommentId) formData.append('parentCommentId', comment.parentCommentId.toString());
 
-    return this.http.post<void>(`${apiUrl}/post`, formData);
+    return this.http.post<void>(`${apiUrl}/post`, formData, { headers: this.ngrokHeader });
   }
 
   loadComments(
@@ -45,19 +43,18 @@ export class CommentService {
     );
   }
   loadAllComments(): Observable<UserComment[]> {
-    return this.http.get<UserComment[]>(`${apiUrl}/all`);
+    return this.http.get<UserComment[]>(`${apiUrl}/all`, { headers: this.ngrokHeader });
   }
   countComments(): Observable<number> {
-    return this.http.get<number>(`${apiUrl}/count`);
+    return this.http.get<number>(`${apiUrl}/count`, { headers: this.ngrokHeader });
   }
   getPreSignedUrl(fileName: string): Observable<string> {
     const params = new HttpParams().set('filePath', fileName);
-    return this.http.get(`${apiUrl}/fileUrl`, { params, responseType: 'text' });
+    return this.http.get(`${apiUrl}/fileUrl`, { params, responseType: 'text', headers: this.ngrokHeader });
   }
   getLastCommentAddedId(email: string): Observable<number> {
-    return this.http.get<number>(`${apiUrl}/lastComment`, {
-      params: { email }
-    });
+    const params = new HttpParams().set('email', email);
+    return this.http.get<number>(`${apiUrl}/lastComment`, { params, headers: this.ngrokHeader });
   }
   async downloadFile(preSignedUrl: string, fileName: string): Promise<File> {
     try {
